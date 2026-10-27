@@ -10,6 +10,11 @@
         <h:messages/>
         <h1>Работники</h1>
         <h:form>
+            <f:websocket channel="workers">
+                <f:ajax event="updated" listener="#{workerListBean.refresh}" render=":listForm:tableBlock"/>
+            </f:websocket>
+        </h:form>
+        <h:form id="listForm">
             <h2>Фильтры</h2>
             <p>
                 <h:inputText value="#{workerListBean.filter.name}"/>
@@ -23,10 +28,6 @@
                 <h:commandButton value="Найти" action="#{workerListBean.search}"/>
                 <h:commandButton value="Сбросить" action="#{workerListBean.reset}"/>
             </p>
-            <f:websocket channel="workers">
-                <f:ajax event="updated" listener="#{workerListBean.refresh}" render="tableBlock"/>
-            </f:websocket>
-
             <h:panelGroup id="tableBlock" layout="block">
                 <h:dataTable value="#{workerListBean.workers}" var="w" border="1" cellpadding="4">
                     <h:column>
