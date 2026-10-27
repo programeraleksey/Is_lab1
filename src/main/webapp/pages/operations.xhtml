@@ -1,0 +1,129 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:f="jakarta.faces.core"
+                template="/WEB-INF/templates/main.xhtml">
+
+    <ui:define name="title">Спецоперации</ui:define>
+
+    <ui:define name="content">
+        <h1>Спецоперации</h1>
+
+        <h:messages globalOnly="true"/>
+
+        <h2>Удалить всех работников с заданным человеком</h2>
+        <h:form>
+            <h:selectOneMenu id="personId" label="Человек" value="#{operationsBean.personId}"
+                             required="true" requiredMessage="Выберите человека">
+                <f:selectItem itemLabel="— выберите —" noSelectionOption="true"/>
+                <f:selectItems value="#{operationsBean.allPersons}" var="p"
+                               itemValue="#{p.id}"
+                               itemLabel="№#{p.id}"/>
+            </h:selectOneMenu>
+            <h:commandButton value="Удалить" action="#{operationsBean.deleteByPerson}"
+                             onclick="return confirm('Удалить всех работников с этим человеком?')"/>
+            <p><h:message for="personId"/></p>
+        </h:form>
+
+        <h2>Количество сотрудников, endDate которых больше заданного</h2>
+        <h:form>
+            <h:inputText id="endDate" label="Дата окончания"
+                         converterMessage="Дата окончания: формат дд.мм.гггг чч:мм" value="#{operationsBean.endDate}"
+                         required="true" requiredMessage="Укажите дату">
+                <f:convertDateTime type="localDateTime" pattern="dd.MM.yyyy HH:mm"/>
+            </h:inputText>
+            дд.мм.гггг чч:мм
+            <h:commandButton value="Посчитать" action="#{operationsBean.countByEndDateAfter}"/>
+            <p><h:message for="endDate"/></p>
+
+            <h:panelGroup rendered="#{operationsBean.endDateCount != null}">
+                <p>Найдено работников: <b>#{operationsBean.endDateCount}</b></p>
+            </h:panelGroup>
+        </h:form>
+
+        <h2>Найти всех работников, startDate которых больше заданного</h2>
+        <h:form>
+            <h:inputText id="startDate" label="Дата начала"
+                         converterMessage="Дата начала: формат дд.мм.гггг" value="#{operationsBean.startDate}"
+                         required="true" requiredMessage="Укажите дату">
+                <f:convertDateTime type="localDate" pattern="dd.MM.yyyy"/>
+            </h:inputText>
+            дд.мм.гггг
+            <h:commandButton value="Найти" action="#{operationsBean.findByStartDateAfter}"/>
+            <p><h:message for="startDate"/></p>
+
+            <h:panelGroup rendered="#{operationsBean.startDateWorkers != null}">
+                <h:panelGroup rendered="#{empty operationsBean.startDateWorkers}">
+                    <p>Ничего не найдено</p>
+                </h:panelGroup>
+                <h:dataTable value="#{operationsBean.startDateWorkers}" var="w" border="1" cellpadding="4"
+                             rendered="#{not empty operationsBean.startDateWorkers}">
+                    <h:column>
+                        <f:facet name="header">ID</f:facet>
+                        <h:link value="#{w.id}" outcome="worker">
+                            <f:param name="id" value="#{w.id}"/>
+                        </h:link>
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">Имя</f:facet>
+                        #{w.name}
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">Дата начала</f:facet>
+                        <h:outputText value="#{w.startDate}">
+                            <f:convertDateTime type="localDate" pattern="dd.MM.yyyy"/>
+                        </h:outputText>
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">Организация</f:facet>
+                        #{w.organization.fullName}
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">Зарплата</f:facet>
+                        #{w.salary}
+                    </h:column>
+                </h:dataTable>
+            </h:panelGroup>
+        </h:form>
+
+        <h2>Принять сотрудника в организацию</h2>
+        <h:form>
+            <h:selectOneMenu id="worker" label="Работник" value="#{operationsBean.workerId}"
+                             required="true" requiredMessage="Выберите работника">
+                <f:selectItem itemLabel="— работник —" noSelectionOption="true"/>
+                <f:selectItems value="#{operationsBean.allWorkers}" var="w"
+                               itemValue="#{w.id}" itemLabel="№#{w.id}: #{w.name}"/>
+            </h:selectOneMenu>
+
+            <h:selectOneMenu id="org" label="Организация" value="#{operationsBean.organizationId}"
+                             required="true" requiredMessage="Выберите организацию">
+                <f:selectItem itemLabel="— организация —" noSelectionOption="true"/>
+                <f:selectItems value="#{operationsBean.allOrganizations}" var="o"
+                               itemValue="#{o.id}" itemLabel="№#{o.id}: #{o.fullName}"/>
+            </h:selectOneMenu>
+
+            <h:commandButton value="Принять" action="#{operationsBean.hire}"/>
+
+            <p><h:message for="worker"/></p>
+            <p><h:message for="org"/></p>
+        </h:form>
+
+        <h2>Проиндексировать заработную плату сотрудника</h2>
+        <h:form>
+            <h:selectOneMenu id="worker" label="Работник" value="#{operationsBean.workerId}"
+                             required="true" requiredMessage="Выберите работника">
+                <f:selectItem itemLabel="— работник —" noSelectionOption="true"/>
+                <f:selectItems value="#{operationsBean.allWorkers}" var="w"
+                               itemValue="#{w.id}" itemLabel="№#{w.id}: #{w.name} (зарплата #{w.salary})"/>
+            </h:selectOneMenu>
+            коэффициент
+            <h:inputText id="coefficient" label="Коэффициент"
+                         converterMessage="Коэффициент: должно быть числом" value="#{operationsBean.coefficient}" size="6"
+                         required="true" requiredMessage="Укажите коэффициент"/>
+            <h:commandButton value="Проиндексировать" action="#{operationsBean.indexSalary}"/>
+
+            <p><h:message for="worker"/></p>
+            <p><h:message for="coefficient"/></p>
+        </h:form>
+    </ui:define>
+</ui:composition>

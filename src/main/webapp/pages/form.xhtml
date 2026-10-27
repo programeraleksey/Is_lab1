@@ -1,0 +1,380 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:f="jakarta.faces.core"
+                template="/WEB-INF/templates/main.xhtml">
+
+    <f:metadata>
+        <f:viewParam name="id" value="#{workerFormBean.id}"/>
+        <f:viewAction action="#{workerFormBean.load}"/>
+    </f:metadata>
+
+    <ui:define name="title">#{workerFormBean.edit ? 'Изменение работника' : 'Новый работник'}</ui:define>
+
+    <ui:define name="content">
+
+        <h1>#{workerFormBean.edit ? 'Изменение работника №' += workerFormBean.id : 'Новый работник'}</h1>
+
+        <h:messages globalOnly="true"/>
+
+        <h:form rendered="#{workerFormBean.worker != null}">
+            <h2>Работник</h2>
+            <table cellpadding="4">
+                <tr>
+                    <th>Имя *</th>
+                    <td><h:inputText id="name" label="Имя" value="#{workerFormBean.worker.name}"/></td>
+                    <td><h:message for="name"/></td>
+                </tr>
+                <tr>
+                    <th>Зарплата *</th>
+                    <td><h:inputText id="salary" label="Зарплата"
+                         converterMessage="Зарплата: должно быть числом" value="#{workerFormBean.worker.salary}"
+                                     required="true" requiredMessage="Зарплата: поле обязательно"/></td>
+                    <td><h:message for="salary"/></td>
+                </tr>
+                <tr>
+                    <th>Рейтинг *</th>
+                    <td><h:inputText id="rating" label="Рейтинг"
+                         converterMessage="Рейтинг: должно быть целым числом" value="#{workerFormBean.worker.rating}"
+                                     required="true" requiredMessage="Рейтинг: поле обязательно"/></td>
+                    <td><h:message for="rating"/></td>
+                </tr>
+                <tr>
+                    <th>Дата начала *</th>
+                    <td>
+                        <h:inputText id="startDate" label="Дата начала"
+                         converterMessage="Дата начала: формат дд.мм.гггг" value="#{workerFormBean.worker.startDate}">
+                            <f:convertDateTime type="localDate" pattern="dd.MM.yyyy"/>
+                        </h:inputText>
+                    </td>
+                    <td>дд.мм.гггг <h:message for="startDate"/></td>
+                </tr>
+                <tr>
+                    <th>Дата окончания</th>
+                    <td>
+                        <h:inputText id="endDate" label="Дата окончания"
+                         converterMessage="Дата окончания: формат дд.мм.гггг чч:мм" value="#{workerFormBean.endDate}">
+                            <f:convertDateTime type="localDateTime" pattern="dd.MM.yyyy HH:mm"/>
+                        </h:inputText>
+                    </td>
+                    <td>дд.мм.гггг чч:мм <h:message for="endDate"/></td>
+                </tr>
+                <tr>
+                    <th>Должность</th>
+                    <td>
+                        <h:selectOneMenu id="position" label="Должность" value="#{workerFormBean.worker.position}">
+                            <f:selectItem itemLabel="нет" noSelectionOption="true"/>
+                            <f:selectItems value="#{workerFormBean.positions}"/>
+                        </h:selectOneMenu>
+                    </td>
+                    <td><h:message for="position"/></td>
+                </tr>
+            </table>
+
+            <h2>Координаты</h2>
+            <h:selectOneRadio id="coordMode" value="#{workerFormBean.coordinatesMode}">
+                <f:selectItem itemValue="NEW" itemLabel="Новые"/>
+                <f:selectItem itemValue="EXISTING" itemLabel="Существующие"/>
+                <f:ajax execute="@this" render="coordBlock"/>
+            </h:selectOneRadio>
+            <h:panelGroup id="coordBlock" layout="block">
+                <h:panelGroup rendered="#{workerFormBean.coordinatesMode == 'NEW'}">
+                    <table cellpadding="4">
+                        <tr>
+                            <th>X *</th>
+                            <td><h:inputText id="x" label="X"
+                         converterMessage="X: должно быть числом" value="#{workerFormBean.coordinates.x}"/></td>
+                            <td><h:message for="x"/></td>
+                        </tr>
+                        <tr>
+                            <th>Y *</th>
+                            <td><h:inputText id="y" label="Y"
+                         converterMessage="Y: должно быть целым числом" value="#{workerFormBean.coordinates.y}"/></td>
+                            <td><h:message for="y"/></td>
+                        </tr>
+                    </table>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{workerFormBean.coordinatesMode == 'EXISTING'}">
+                    <h:selectOneMenu id="coordId" label="Координаты" value="#{workerFormBean.coordinatesId}"
+                                     required="true" requiredMessage="Выберите координаты">
+                        <f:selectItem itemLabel="— выберите —" noSelectionOption="true"/>
+                        <f:selectItems value="#{workerFormBean.allCoordinates}" var="c"
+                                       itemValue="#{c.id}" itemLabel="№#{c.id}: (#{c.x}; #{c.y})"/>
+                    </h:selectOneMenu>
+                    <h:message for="coordId"/>
+                </h:panelGroup>
+            </h:panelGroup>
+
+            <h2>Организация</h2>
+            <h:selectOneRadio id="orgMode" value="#{workerFormBean.organizationMode}">
+                <f:selectItem itemValue="NONE" itemLabel="Нет"/>
+                <f:selectItem itemValue="EXISTING" itemLabel="Существующая"/>
+                <f:selectItem itemValue="NEW" itemLabel="Новая"/>
+                <f:ajax execute="@this" render="orgBlock"/>
+            </h:selectOneRadio>
+            <h:panelGroup id="orgBlock" layout="block">
+                <h:panelGroup rendered="#{workerFormBean.organizationMode == 'EXISTING'}">
+                    <h:selectOneMenu id="orgId" label="Организация" value="#{workerFormBean.organizationId}"
+                                     required="true" requiredMessage="Выберите организацию">
+                        <f:selectItem itemLabel="— выберите —" noSelectionOption="true"/>
+                        <f:selectItems value="#{workerFormBean.allOrganizations}" var="o"
+                                       itemValue="#{o.id}" itemLabel="№#{o.id}: #{o.fullName}"/>
+                    </h:selectOneMenu>
+                    <h:message for="orgId"/>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{workerFormBean.organizationMode == 'NEW'}">
+                    <table cellpadding="4">
+                        <tr>
+                            <th>Название *</th>
+                            <td><h:inputText id="orgName" label="Название"
+                                             value="#{workerFormBean.organization.fullName}"/></td>
+                            <td><h:message for="orgName"/></td>
+                        </tr>
+                        <tr>
+                            <th>Годовой оборот *</th>
+                            <td><h:inputText id="orgTurnover" label="Годовой оборот"
+                         converterMessage="Годовой оборот: должно быть целым числом"
+                                             value="#{workerFormBean.organization.annualTurnover}"
+                                             required="true" requiredMessage="Годовой оборот: поле обязательно"/></td>
+                            <td><h:message for="orgTurnover"/></td>
+                        </tr>
+                        <tr>
+                            <th>Кол-во сотрудников</th>
+                            <td><h:inputText id="orgEmployees" label="Кол-во сотрудников"
+                         converterMessage="Кол-во сотрудников: должно быть целым числом"
+                                             value="#{workerFormBean.organization.employeesCount}"/></td>
+                            <td><h:message for="orgEmployees"/></td>
+                        </tr>
+                        <tr>
+                            <th>Рейтинг *</th>
+                            <td><h:inputText id="orgRating" label="Рейтинг организации"
+                         converterMessage="Рейтинг организации: должно быть целым числом"
+                                             value="#{workerFormBean.organization.rating}"
+                                             required="true" requiredMessage="Рейтинг организации: поле обязательно"/></td>
+                            <td><h:message for="orgRating"/></td>
+                        </tr>
+                    </table>
+
+                    <h3>Адрес организации</h3>
+                    <h:selectOneRadio id="addrMode" value="#{workerFormBean.addressMode}">
+                        <f:selectItem itemValue="NONE" itemLabel="Нет"/>
+                        <f:selectItem itemValue="EXISTING" itemLabel="Существующий"/>
+                        <f:selectItem itemValue="NEW" itemLabel="Новый"/>
+                        <f:ajax execute="@this" render="addrBlock"/>
+                    </h:selectOneRadio>
+                    <h:panelGroup id="addrBlock" layout="block">
+                        <h:panelGroup rendered="#{workerFormBean.addressMode == 'EXISTING'}">
+                            <h:selectOneMenu id="addrId" label="Адрес" value="#{workerFormBean.addressId}"
+                                             required="true" requiredMessage="Выберите адрес">
+                                <f:selectItem itemLabel="— выберите —" noSelectionOption="true"/>
+                                <f:selectItems value="#{workerFormBean.allAddresses}" var="a"
+                                               itemValue="#{a.id}" itemLabel="№#{a.id}: #{a.street}, #{a.town.name}"/>
+                            </h:selectOneMenu>
+                            <h:message for="addrId"/>
+                        </h:panelGroup>
+
+                        <h:panelGroup rendered="#{workerFormBean.addressMode == 'NEW'}">
+                            <table cellpadding="4">
+                                <tr>
+                                    <th>Улица *</th>
+                                    <td><h:inputText id="street" label="Улица"
+                                                     value="#{workerFormBean.address.street}"/></td>
+                                    <td><h:message for="street"/></td>
+                                </tr>
+                            </table>
+
+                            <h4>Город *</h4>
+                            <h:selectOneRadio id="townMode" value="#{workerFormBean.townMode}">
+                                <f:selectItem itemValue="EXISTING" itemLabel="Существующий"/>
+                                <f:selectItem itemValue="NEW" itemLabel="Новый"/>
+                                <f:ajax execute="@this" render="townBlock"/>
+                            </h:selectOneRadio>
+                            <h:panelGroup id="townBlock" layout="block">
+                                <h:panelGroup rendered="#{workerFormBean.townMode == 'EXISTING'}">
+                                    <h:selectOneMenu id="townId" label="Город" value="#{workerFormBean.townId}"
+                                                     required="true" requiredMessage="Выберите город">
+                                        <f:selectItem itemLabel="— выберите —" noSelectionOption="true"/>
+                                        <f:selectItems value="#{workerFormBean.allLocations}" var="l"
+                                                       itemValue="#{l.id}"
+                                                       itemLabel="№#{l.id}: #{l.name} (#{l.x}; #{l.y}; #{l.z})"/>
+                                    </h:selectOneMenu>
+                                    <h:message for="townId"/>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{workerFormBean.townMode == 'NEW'}">
+                                    <table cellpadding="4">
+                                        <tr>
+                                            <th>Название *</th>
+                                            <td><h:inputText id="townName" label="Название города"
+                                                             value="#{workerFormBean.town.name}"/></td>
+                                            <td><h:message for="townName"/></td>
+                                        </tr>
+                                        <tr>
+                                            <th>X *</th>
+                                            <td><h:inputText id="townX" label="X города"
+                         converterMessage="X города: должно быть целым числом"
+                                                             value="#{workerFormBean.town.x}"
+                                                             required="true" requiredMessage="X города: поле обязательно"/></td>
+                                            <td><h:message for="townX"/></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Y *</th>
+                                            <td><h:inputText id="townY" label="Y города"
+                         converterMessage="Y города: должно быть числом"
+                                                             value="#{workerFormBean.town.y}"/></td>
+                                            <td><h:message for="townY"/></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Z *</th>
+                                            <td><h:inputText id="townZ" label="Z города"
+                         converterMessage="Z города: должно быть целым числом"
+                                                             value="#{workerFormBean.town.z}"
+                                                             required="true" requiredMessage="Z города: поле обязательно"/></td>
+                                            <td><h:message for="townZ"/></td>
+                                        </tr>
+                                    </table>
+                                </h:panelGroup>
+                            </h:panelGroup>
+                        </h:panelGroup>
+                    </h:panelGroup>
+                </h:panelGroup>
+            </h:panelGroup>
+
+            <h2>Человек</h2>
+            <h:selectOneRadio id="personMode" value="#{workerFormBean.personMode}">
+                <f:selectItem itemValue="NONE" itemLabel="Нет"/>
+                <f:selectItem itemValue="EXISTING" itemLabel="Существующий"/>
+                <f:selectItem itemValue="NEW" itemLabel="Новый"/>
+                <f:ajax execute="@this" render="personBlock"/>
+            </h:selectOneRadio>
+            <h:panelGroup id="personBlock" layout="block">
+                <h:panelGroup rendered="#{workerFormBean.personMode == 'EXISTING'}">
+                    <h:selectOneMenu id="personId" label="Человек" value="#{workerFormBean.personId}"
+                                     required="true" requiredMessage="Выберите человека">
+                        <f:selectItem itemLabel="— выберите —" noSelectionOption="true"/>
+                        <f:selectItems value="#{workerFormBean.allPersons}" var="p"
+                                       itemValue="#{p.id}"
+                                       itemLabel="№#{p.id}"/>
+                    </h:selectOneMenu>
+                    <h:message for="personId"/>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{workerFormBean.personMode == 'NEW'}">
+                    <table cellpadding="4">
+                        <tr>
+                            <th>Цвет глаз *</th>
+                            <td>
+                                <h:selectOneMenu id="eyeColor" label="Цвет глаз"
+                                                 value="#{workerFormBean.person.eyeColor}">
+                                    <f:selectItem itemLabel="— выберите —" noSelectionOption="true"/>
+                                    <f:selectItems value="#{workerFormBean.colors}"/>
+                                </h:selectOneMenu>
+                            </td>
+                            <td><h:message for="eyeColor"/></td>
+                        </tr>
+                        <tr>
+                            <th>Цвет волос</th>
+                            <td>
+                                <h:selectOneMenu id="hairColor" label="Цвет волос"
+                                                 value="#{workerFormBean.person.hairColor}">
+                                    <f:selectItem itemLabel="нет" noSelectionOption="true"/>
+                                    <f:selectItems value="#{workerFormBean.colors}"/>
+                                </h:selectOneMenu>
+                            </td>
+                            <td><h:message for="hairColor"/></td>
+                        </tr>
+                        <tr>
+                            <th>День рождения</th>
+                            <td>
+                                <h:inputText id="birthday" label="День рождения"
+                         converterMessage="День рождения: формат дд.мм.гггг чч:мм"
+                                             value="#{workerFormBean.person.birthday}">
+                                    <f:convertDateTime type="localDateTime" pattern="dd.MM.yyyy HH:mm"/>
+                                </h:inputText>
+                            </td>
+                            <td>дд.мм.гггг чч:мм <h:message for="birthday"/></td>
+                        </tr>
+                        <tr>
+                            <th>Национальность</th>
+                            <td>
+                                <h:selectOneMenu id="nationality" label="Национальность"
+                                                 value="#{workerFormBean.person.nationality}">
+                                    <f:selectItem itemLabel="нет" noSelectionOption="true"/>
+                                    <f:selectItems value="#{workerFormBean.countries}"/>
+                                </h:selectOneMenu>
+                            </td>
+                            <td><h:message for="nationality"/></td>
+                        </tr>
+                    </table>
+
+                    <h3>Локация человека</h3>
+                    <h:selectOneRadio id="locMode" value="#{workerFormBean.personLocationMode}">
+                        <f:selectItem itemValue="NONE" itemLabel="Нет"/>
+                        <f:selectItem itemValue="EXISTING" itemLabel="Существующая"/>
+                        <f:selectItem itemValue="NEW" itemLabel="Новая"/>
+                        <f:ajax execute="@this" render="locBlock"/>
+                    </h:selectOneRadio>
+                    <h:panelGroup id="locBlock" layout="block">
+                        <h:panelGroup rendered="#{workerFormBean.personLocationMode == 'EXISTING'}">
+                            <h:selectOneMenu id="locId" label="Локация" value="#{workerFormBean.personLocationId}"
+                                             required="true" requiredMessage="Выберите локацию">
+                                <f:selectItem itemLabel="— выберите —" noSelectionOption="true"/>
+                                <f:selectItems value="#{workerFormBean.allLocations}" var="l"
+                                               itemValue="#{l.id}"
+                                               itemLabel="№#{l.id}: #{l.name} (#{l.x}; #{l.y}; #{l.z})"/>
+                            </h:selectOneMenu>
+                            <h:message for="locId"/>
+                        </h:panelGroup>
+
+                        <h:panelGroup rendered="#{workerFormBean.personLocationMode == 'NEW'}">
+                            <table cellpadding="4">
+                                <tr>
+                                    <th>Название *</th>
+                                    <td><h:inputText id="locName" label="Название локации"
+                                                     value="#{workerFormBean.personLocation.name}"/></td>
+                                    <td><h:message for="locName"/></td>
+                                </tr>
+                                <tr>
+                                    <th>X *</th>
+                                    <td><h:inputText id="locX" label="X локации"
+                         converterMessage="X локации: должно быть целым числом"
+                                                     value="#{workerFormBean.personLocation.x}"
+                                                     required="true" requiredMessage="X локации: поле обязательно"/></td>
+                                    <td><h:message for="locX"/></td>
+                                </tr>
+                                <tr>
+                                    <th>Y *</th>
+                                    <td><h:inputText id="locY" label="Y локации"
+                         converterMessage="Y локации: должно быть числом"
+                                                     value="#{workerFormBean.personLocation.y}"/></td>
+                                    <td><h:message for="locY"/></td>
+                                </tr>
+                                <tr>
+                                    <th>Z *</th>
+                                    <td><h:inputText id="locZ" label="Z локации"
+                         converterMessage="Z локации: должно быть целым числом"
+                                                     value="#{workerFormBean.personLocation.z}"
+                                                     required="true" requiredMessage="Z локации: поле обязательно"/></td>
+                                    <td><h:message for="locZ"/></td>
+                                </tr>
+                            </table>
+                        </h:panelGroup>
+                    </h:panelGroup>
+                </h:panelGroup>
+            </h:panelGroup>
+
+            <p>* — обязательные поля</p>
+
+            <p>
+                <h:commandButton value="#{workerFormBean.edit ? 'Сохранить' : 'Создать'}"
+                                 action="#{workerFormBean.save}"/>
+                <h:link value="Отмена" outcome="index" rendered="#{not workerFormBean.edit}"/>
+                <h:link value="Отмена" outcome="worker" rendered="#{workerFormBean.edit}">
+                    <f:param name="id" value="#{workerFormBean.id}"/>
+                </h:link>
+            </p>
+        </h:form>
+
+    </ui:define>
+</ui:composition>

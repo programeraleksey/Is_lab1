@@ -1,0 +1,146 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:f="jakarta.faces.core"
+                template="/WEB-INF/templates/main.xhtml">
+
+    <ui:define name="title">Работник</ui:define>
+
+    <ui:define name="content">
+
+        <f:metadata>
+            <f:viewParam name="id" value="#{workerViewBean.id}"/>
+            <f:viewAction action="#{workerViewBean.load}"/>
+        </f:metadata>
+
+        <h1>Работник</h1>
+
+        <h:form>
+            <f:websocket channel="workers">
+                <f:ajax event="updated" listener="#{workerViewBean.refresh}" render=":viewBlock"/>
+            </f:websocket>
+        </h:form>
+
+        <h:panelGroup id="viewBlock" layout="block">
+            <h:messages/>
+
+            <h:panelGroup rendered="#{workerViewBean.worker != null}">
+                <table border="1" cellpadding="4">
+                    <tr><th>ID</th><td>#{workerViewBean.worker.id}</td></tr>
+                    <tr><th>Имя</th><td>#{workerViewBean.worker.name}</td></tr>
+                    <tr><th>Координаты</th>
+                        <td>(#{workerViewBean.worker.coordinates.x}; #{workerViewBean.worker.coordinates.y})</td></tr>
+                    <tr><th>Дата создания</th>
+                        <td>
+                            <h:outputText value="#{workerViewBean.worker.creationDate}">
+                                <f:convertDateTime type="zonedDateTime" pattern="dd.MM.yyyy HH:mm"/>
+                            </h:outputText>
+                        </td></tr>
+                    <tr><th>Организация</th><td>#{workerViewBean.worker.organization.fullName}</td></tr>
+                    <tr><th>Зарплата</th><td>#{workerViewBean.worker.salary}</td></tr>
+                    <tr><th>Рейтинг</th><td>#{workerViewBean.worker.rating}</td></tr>
+                    <tr><th>Дата начала</th>
+                        <td>
+                            <h:outputText value="#{workerViewBean.worker.startDate}">
+                                <f:convertDateTime type="localDate" pattern="dd.MM.yyyy"/>
+                            </h:outputText>
+                        </td></tr>
+                    <tr><th>Дата окончания</th>
+                        <td>
+                            <h:outputText value="#{workerViewBean.worker.endDate}">
+                                <f:convertDateTime type="zonedDateTime" pattern="dd.MM.yyyy HH:mm"/>
+                            </h:outputText>
+                        </td></tr>
+                    <tr><th>Должность</th><td>#{workerViewBean.worker.position}</td></tr>
+                    <tr><th>Человек</th><td>#{workerViewBean.worker.person.id}</td></tr>
+                </table>
+
+                <ui:param name="coord" value="#{workerViewBean.worker.coordinates}"/>
+                <ui:param name="org" value="#{workerViewBean.worker.organization}"/>
+                <ui:param name="person" value="#{workerViewBean.worker.person}"/>
+
+                <h2>Координаты</h2>
+                <table border="1" cellpadding="4">
+                    <tr><th>ID</th><td>#{coord.id}</td></tr>
+                    <tr><th>X</th><td>#{coord.x}</td></tr>
+                    <tr><th>Y</th><td>#{coord.y}</td></tr>
+                </table>
+
+                <h2>Организация</h2>
+                <h:panelGroup rendered="#{org != null}">
+                    <table border="1" cellpadding="4">
+                        <tr><th>ID</th><td>#{org.id}</td></tr>
+                        <tr><th>Название</th><td>#{org.fullName}</td></tr>
+                        <tr><th>Годовой оборот</th><td>#{org.annualTurnover}</td></tr>
+                        <tr><th>Кол-во сотрудников</th><td>#{org.employeesCount}</td></tr>
+                        <tr><th>Рейтинг</th><td>#{org.rating}</td></tr>
+                    </table>
+
+                    <h3>Адрес</h3>
+                    <h:panelGroup rendered="#{org.officialAddress != null}">
+                        <table border="1" cellpadding="4">
+                            <tr><th>ID</th><td>#{org.officialAddress.id}</td></tr>
+                            <tr><th>Улица</th><td>#{org.officialAddress.street}</td></tr>
+                            <tr><th>Город</th><td>#{org.officialAddress.town.name}</td></tr>
+                            <tr><th>X</th><td>#{org.officialAddress.town.x}</td></tr>
+                            <tr><th>Y</th><td>#{org.officialAddress.town.y}</td></tr>
+                            <tr><th>Z</th><td>#{org.officialAddress.town.z}</td></tr>
+                        </table>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{org.officialAddress == null}">
+                        <p>Адрес не указан</p>
+                    </h:panelGroup>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{org == null}">
+                    <p>Не указана</p>
+                </h:panelGroup>
+
+                <h2>Человек</h2>
+                <h:panelGroup rendered="#{person != null}">
+                    <table border="1" cellpadding="4">
+                        <tr><th>ID</th><td>#{person.id}</td></tr>
+                        <tr><th>Цвет глаз</th><td>#{person.eyeColor}</td></tr>
+                        <tr><th>Цвет волос</th><td>#{person.hairColor}</td></tr>
+                        <tr><th>День рождения</th>
+                            <td>
+                                <h:outputText value="#{person.birthday}">
+                                    <f:convertDateTime type="localDateTime" pattern="dd.MM.yyyy HH:mm"/>
+                                </h:outputText>
+                            </td></tr>
+                        <tr><th>Национальность</th><td>#{person.nationality}</td></tr>
+                    </table>
+
+                    <h3>Локация</h3>
+                    <h:panelGroup rendered="#{person.location != null}">
+                        <table border="1" cellpadding="4">
+                            <tr><th>ID</th><td>#{person.location.id}</td></tr>
+                            <tr><th>Название</th><td>#{person.location.name}</td></tr>
+                            <tr><th>X</th><td>#{person.location.x}</td></tr>
+                            <tr><th>Y</th><td>#{person.location.y}</td></tr>
+                            <tr><th>Z</th><td>#{person.location.z}</td></tr>
+                        </table>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{person.location == null}">
+                        <p>Локация не указана</p>
+                    </h:panelGroup>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{person == null}">
+                    <p>Не указан</p>
+                </h:panelGroup>
+                <h:form>
+                    <h:button value="Изменить" outcome="form">
+                        <f:param name="id" value="#{workerViewBean.worker.id}"/>
+                    </h:button>
+                    <h:commandButton value="Удалить" action="#{workerViewBean.delete}" onclick="return confirm('Удалить работника?')"/>
+                </h:form>
+            </h:panelGroup>
+
+        </h:panelGroup>
+
+        <p>
+            <h:link value="К списку" outcome="index"/>
+
+        </p>
+
+    </ui:define>
+</ui:composition>

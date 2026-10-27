@@ -1,0 +1,123 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:f="jakarta.faces.core"
+                template="/WEB-INF/templates/main.xhtml">
+
+    <ui:define name="title">Работники</ui:define>
+
+    <ui:define name="content">
+        <h:messages/>
+        <h1>Работники</h1>
+        <h:form>
+            <h2>Фильтры</h2>
+            <p>
+                <h:inputText value="#{workerListBean.filter.name}"/>
+                <h:inputText value="#{workerListBean.filter.organizationName}"/>
+                <h:selectOneMenu value="#{workerListBean.filter.position}">
+                    <f:selectItem itemLabel="любая" noSelectionOption="true"/>
+                    <f:selectItems value="#{workerListBean.positions}"/>
+                </h:selectOneMenu>
+            </p>
+            <p>
+                <h:commandButton value="Найти" action="#{workerListBean.search}"/>
+                <h:commandButton value="Сбросить" action="#{workerListBean.reset}"/>
+            </p>
+            <f:websocket channel="workers">
+                <f:ajax event="updated" listener="#{workerListBean.refresh}" render="tableBlock"/>
+            </f:websocket>
+
+            <h:panelGroup id="tableBlock" layout="block">
+                <h:dataTable value="#{workerListBean.workers}" var="w" border="1" cellpadding="4">
+                    <h:column>
+                        <f:facet name="header">
+                            <h:commandLink value="ID #{workerListBean.sortIndicator('id')}"
+                                           action="#{workerListBean.sortBy('id')}">
+                                <f:ajax execute="@this" render="@form"/>
+                            </h:commandLink>
+                        </f:facet>
+                        <h:link value="#{w.id}" outcome="worker">
+                            <f:param name="id" value="#{w.id}"/>
+                        </h:link>
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">
+                            <h:commandLink value="Имя #{workerListBean.sortIndicator('name')}"
+                                           action="#{workerListBean.sortBy('name')}">
+                                <f:ajax execute="@this" render="@form"/>
+                            </h:commandLink>
+                        </f:facet>
+                        #{w.name}
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">Координаты</f:facet>
+                        (#{w.coordinates.x}; #{w.coordinates.y})
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">Дата создания</f:facet>
+                        <h:outputText value="#{w.creationDate}">
+                            <f:convertDateTime type="zonedDateTime" pattern="dd.MM.yyyy HH:mm"/>
+                        </h:outputText>
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">
+                            <h:commandLink value="Организация #{workerListBean.sortIndicator('organization')}"
+                                           action="#{workerListBean.sortBy('organization')}">
+                                <f:ajax execute="@this" render="@form"/>
+                            </h:commandLink>
+                        </f:facet>
+                        #{w.organization.fullName}
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">Зарплата</f:facet>
+                        #{w.salary}
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">Рейтинг</f:facet>
+                        #{w.rating}
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">Дата начала</f:facet>
+                        <h:outputText value="#{w.startDate}">
+                            <f:convertDateTime type="localDate" pattern="dd.MM.yyyy"/>
+                        </h:outputText>
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">Дата окончания</f:facet>
+                        <h:outputText value="#{w.endDate}">
+                            <f:convertDateTime type="zonedDateTime" pattern="dd.MM.yyyy HH:mm"/>
+                        </h:outputText>
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">
+                            <h:commandLink value="Позиция #{workerListBean.sortIndicator('position')}"
+                                           action="#{workerListBean.sortBy('position')}">
+                            <f:ajax execute="@this" render="@form"/>
+                            </h:commandLink>
+                        </f:facet>
+
+                        #{w.position}
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">Человек</f:facet>
+                        #{w.person.id}
+                    </h:column>
+                    <h:column>
+                        <h:link value="изменить" outcome="form">
+                            <f:param name="id" value="#{w.id}"/>
+                        </h:link>
+                    </h:column>
+                </h:dataTable>
+                <p>
+                    <h:commandButton value="Назад" action="#{workerListBean.prev}" disabled="#{not workerListBean.hasPrev}">
+                    <f:ajax execute="@this" render="@form"/>
+                        </h:commandButton>
+                    <h:outputText value=" Страница #{workerListBean.page + 1} из #{workerListBean.totalPages} (всего: #{workerListBean.total}) "/>
+                    <h:commandButton value="Вперёд" action="#{workerListBean.next}" disabled="#{not workerListBean.hasNext}">
+                        <f:ajax execute="@this" render="@form"/>
+                    </h:commandButton>
+                </p>
+            </h:panelGroup>
+        </h:form>
+    </ui:define>
+</ui:composition>

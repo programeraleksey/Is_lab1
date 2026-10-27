@@ -6,10 +6,18 @@
     <persistence-unit name="myPU" transaction-type="JTA">
         <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
         <jta-data-source>jdbc/MyDS</jta-data-source>
-        <class>com.example.Note</class>
-        <exclude-unlisted-classes>true</exclude-unlisted-classes>
+        <class>com.example.entity.Coordinates</class>
+        <class>com.example.entity.Location</class>
+        <class>com.example.entity.Address</class>
+        <class>com.example.entity.Organization</class>
+        <class>com.example.entity.Person</class>
+        <class>com.example.entity.Worker</class>
+        <class>com.example.entity.ZonedDateTimeConverter</class>
+        <exclude-unlisted-classes>false</exclude-unlisted-classes>
         <properties>
             <property name="jakarta.persistence.schema-generation.database.action" value="create"/>
+            <property name="jakarta.persistence.schema-generation.create-source" value="metadata-then-script"/>
+            <property name="jakarta.persistence.schema-generation.create-script-source" value="META-INF/sql/checkers.sql"/>
             <property name="eclipselink.logging.level.sql" value="FINE"/>
             <property name="eclipselink.logging.parameters" value="true"/>
         </properties>
