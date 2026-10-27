@@ -26,10 +26,6 @@
         <url-pattern>*.xhtml</url-pattern>
     </servlet-mapping>
 
-    <error-page>
-        <location>/error.xhtml</location>
-    </error-page>
-
     <welcome-file-list>
         <welcome-file>pages/index.xhtml</welcome-file>
     </welcome-file-list>
